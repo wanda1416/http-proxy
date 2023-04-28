@@ -30,8 +30,8 @@ public class ProxyLauncher {
     @Value("${forward.url}")
     private String forwardUrl;
 
-    @Value("${authorization}")
-    private boolean authorization;
+    @Value("${authorize}")
+    private boolean authorize;
 
     @Value("${username}")
     private String username;
@@ -53,7 +53,7 @@ public class ProxyLauncher {
         }
         RestTemplate restTemplate = new RestTemplate();
         HttpLogUtils.log(request, httpEntity.getBody());
-        if (authorization) {
+        if (authorize) {
             byte[] auth = Base64.encodeBase64((username + ":" + password).getBytes());
             HttpHeaders newHeaders = HttpHeaders.writableHttpHeaders(httpEntity.getHeaders());
             newHeaders.add("Authorization", "Basic " + new String(auth, StandardCharsets.UTF_8));

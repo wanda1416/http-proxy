@@ -1,5 +1,5 @@
 forward:
   url: http://127.0.0.1:7080
-authorization: false
+authorize: false
 username: ADMIN
 password: KYLIN@123
