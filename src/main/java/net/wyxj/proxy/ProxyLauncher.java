@@ -45,7 +45,7 @@ public class ProxyLauncher {
     }
 
     @RequestMapping("/**")
-    public ResponseEntity<String> forward(HttpServletRequest request, HttpEntity<String> httpEntity) {
+    public ResponseEntity<byte[]> forward(HttpServletRequest request, HttpEntity<byte[]> httpEntity) {
         String method = request.getMethod();
         String url = forwardUrl + request.getRequestURI();
         if (request.getQueryString() != null) {
@@ -59,16 +59,16 @@ public class ProxyLauncher {
             newHeaders.add("Authorization", "Basic " + new String(auth, StandardCharsets.UTF_8));
             httpEntity = new HttpEntity<>(httpEntity.getBody(), newHeaders);
         }
-        ResponseEntity<String> response;
+        ResponseEntity<byte[]> response;
         try {
             response = restTemplate.exchange(
                     url,
                     Objects.requireNonNull(HttpMethod.resolve(method)),
-                    httpEntity, String.class);
+                    httpEntity, byte[].class);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            response = new ResponseEntity<>(e.getResponseBodyAsString(), e.getResponseHeaders(), e.getStatusCode());
+            response = new ResponseEntity<>(e.getResponseBodyAsByteArray(), e.getResponseHeaders(), e.getStatusCode());
         }
-        HttpLogUtils.log(response, response.getBody());
+        HttpLogUtils.log(request, response, response.getBody());
         return response;
     }
 

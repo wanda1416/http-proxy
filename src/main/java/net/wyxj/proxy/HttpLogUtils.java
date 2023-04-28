@@ -1,15 +1,14 @@
 package net.wyxj.proxy;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @Slf4j
 public class HttpLogUtils {
@@ -28,7 +27,7 @@ public class HttpLogUtils {
     private HttpLogUtils() {
     }
 
-    public static void log(HttpServletRequest request, String requestBody) {
+    public static void log(HttpServletRequest request, byte[] requestBody) {
         StringBuilder buf = new StringBuilder();
         buf.append(NL);
         buf.append("************************* Request Message **************************").append(NL);
@@ -49,14 +48,15 @@ public class HttpLogUtils {
         }
         if (requestBody != null) {
             buf.append(NL);
-            buf.append(requestBody);
+            String content = new String(requestBody, getCharsetEncoding(request, null));
+            buf.append(content);
             buf.append(NL);
         }
         buf.append("********************************************************************");
         log.info(buf.toString());
     }
 
-    public static void log(ResponseEntity<String> response, String responseBody) {
+    public static void log(HttpServletRequest request, ResponseEntity<byte[]> response, byte[] responseBody) {
         StringBuilder buf = new StringBuilder();
         buf.append(NL);
         buf.append("************************* Response Message *************************").append(NL);
@@ -72,11 +72,32 @@ public class HttpLogUtils {
         }
         if (responseBody != null && isLogResponseBody(headers)) {
             buf.append(NL);
-            buf.append(responseBody);
+            String content = new String(responseBody, getCharsetEncoding(request, headers));
+            buf.append(content);
             buf.append(NL);
         }
         buf.append("********************************************************************");
         log.info(buf.toString());
+    }
+
+    @SneakyThrows
+    private static Charset getCharsetEncoding(HttpServletRequest request, HttpHeaders headers) {
+        Charset charset = null;
+        if (headers != null) {
+            if (headers.getContentType() != null) {
+                charset = headers.getContentType().getCharset();
+            }
+        }
+        if (charset == null) {
+            String encoding = request.getCharacterEncoding();
+            if (encoding != null) {
+                charset = Charset.forName(encoding);
+            }
+        }
+        if (charset == null) {
+            charset = StandardCharsets.UTF_8;
+        }
+        return charset;
     }
 
     private static boolean isLogResponseBody(HttpHeaders headers) {
