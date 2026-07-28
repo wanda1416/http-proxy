@@ -1,5 +1,17 @@
+server:
+  port: 8080
+
+# The single upstream target that every request is forwarded to (override with --forward.url=...).
 forward:
   url: http://127.0.0.1:7080
+
+# Optional Basic authentication injected into forwarded requests.
 authorize: false
 username: ADMIN
 password: KYLIN@123
+
+# Where each captured request/response transaction is written, and the max body size
+# (bytes) that is inlined into the text file before spilling to a side-car .bin file.
+capture:
+  dir: ./capture
+  max-body: 1048576
